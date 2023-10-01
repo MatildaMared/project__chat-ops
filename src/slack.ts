@@ -9,6 +9,6 @@ export const handler: Handler = async () => {
 
 	return {
 		statusCode: 200,
-		body: 'TODO: handle Slack commands and interactivity',
+		body: 'TODO: handle Slack commands and interactivity!!',
 	};
 };
