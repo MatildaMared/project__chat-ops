@@ -1,13 +1,19 @@
 import type { Handler } from "@netlify/functions";
 import { parse } from "querystring";
-import { slackApi } from "./util/slack";
+import { slackApi, verifySlackRequest } from "./util/slack";
 
 async function handleSlashCommand(payload: SlackSlashCommandPayload) {
 	switch (payload.command) {
 		case "/foodfight":
+			const joke = await fetch("https://icanhazdadjoke.com/", {
+				headers: {
+					Accept: "text/plain",
+				},
+			});
+
 			const response = await slackApi("chat.postMessage", {
 				channel: payload.channel_id,
-				text: "Hello, world!",
+				text: await joke.text(),
 			});
 
 			if (!response.ok) {
@@ -31,6 +37,16 @@ async function handleSlashCommand(payload: SlackSlashCommandPayload) {
 
 export const handler: Handler = async (event) => {
 	// TODO validate the Slack request
+	const valid = verifySlackRequest(event);
+
+	if (!valid) {
+		console.error("invalid request");
+
+		return {
+			statusCode: 400,
+			body: "Invalid request",
+		};
+	}
 
 	const body = parse(event.body ?? "") as SlackPayload;
 	if (body.command) {
